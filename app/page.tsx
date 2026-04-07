@@ -1,87 +1,32 @@
 "use client";
-
 import { useState } from "react";
-
+interface Question { id: string; question: string; options: string[]; }
+function FullScreenFlow({ questions, onComplete }: { questions: Question[]; onComplete: () => void; }) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [selectedOption, setSelectedOption] = useState<string | null>(null);
+  const currentQuestion = questions[currentIndex];
+  const isLastQuestion = currentIndex === questions.length - 1;
+  const progress = ((currentIndex + 1) / questions.length) * 100;
+  const handleOptionClick = (option: string) => {
+    setSelectedOption(option);
+    setTimeout(() => { if (isLastQuestion) { onComplete(); } else { setCurrentIndex((prev) => prev + 1); setSelectedOption(null); } }, 300);
+  };
+  return (<div className="fixed inset-0 z-50 flex flex-col bg-gradient-to-b from-[#F7F3EA] via-[#FBF8F1] to-[#F7F3EA]"><div className="fixed top-0 left-0 right-0 h-1 bg-[#D8DED4]"><div className="h-full bg-[#1B4332] transition-all duration-500" style={{ width: `${progress}%` }} /></div><div className="flex-1 flex items-center justify-center px-6 md:px-20 py-20"><div className="max-w-4xl w-full text-center"><div className="text-sm text-[#556159] mb-8">{currentIndex + 1} sur {questions.length}</div><h1 className="serif-display text-6xl md:text-8xl leading-[0.9] mb-16">{currentQuestion.question}</h1><div className="flex flex-wrap gap-4 justify-center">{currentQuestion.options.map((option) => (<button key={option} onClick={() => handleOptionClick(option)} className={`px-8 py-5 rounded-2xl border-2 transition-all text-xl ${selectedOption === option ? "bg-[#1B4332] text-white border-[#1B4332] scale-105" : "bg-[rgba(255,254,250,0.92)] border-[#D8DED4] hover:-translate-y-1 hover:border-[#1B4332]"}`}>{option}</button>))}</div><div className="mt-20 text-xs text-[#556159]">présence by symi</div></div></div></div>);
+}
 export default function Page() {
-  const [activeFlow, setActiveFlow] = useState(null);
-
-  return (
-    <div className="min-h-screen w-full">
-      <header className="sticky top-0 z-30 border-b border-soft bg-[rgba(247,243,234,0.78)] backdrop-blur-md">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 md:px-10">
-          <div>
-            <div className="serif-display text-3xl">SYMI Présence</div>
-            <div className="text-[10px] text-[#556159] mt-0.5">by symi</div>
-          </div>
-        </div>
-      </header>
-
-      <main>
-        <section className="mx-auto max-w-7xl px-6 py-20 md:px-10">
-          <div className="grid md:grid-cols-12 gap-10 items-center">
-            <div className="md:col-span-7">
-              <h1 className="serif-display text-5xl md:text-7xl leading-[0.95]">
-                Créer une présence.
-              </h1>
-              <p className="mt-6 text-lg max-w-xl text-[#556159]">
-                Pour vous, ou pour quelqu'un qui compte. Pour la continuité. Pour une relation qui ne dépend pas du temps disponible.
-              </p>
-
-              <div className="mt-10 flex gap-4">
-                <button className="px-6 py-4 rounded-2xl text-white bg-[#1B4332] transition-soft hover:-translate-y-1">
-                  Commencer pour quelqu'un
-                </button>
-                <button className="px-6 py-4 rounded-2xl border border-[#D8DED4] transition-soft hover:-translate-y-1">
-                  Devenir compagnon
-                </button>
-              </div>
-            </div>
-
-            <div className="md:col-span-5">
-              <div className="surface rounded-[2rem] p-8 border border-soft soft-shadow">
-                <div className="text-sm text-[#556159]">Présence en cours de conception</div>
-                <div className="serif-display text-3xl mt-3">Une relation se construit.</div>
-                <p className="mt-4 text-sm text-[#556159]">
-                  Nous ne proposons pas simplement des visites. Nous construisons un rythme, une continuité et une présence qui s'inscrit dans le temps.
-                </p>
-
-                <div className="mt-6 space-y-3 text-sm">
-                  {["Même personne", "Affinité réelle", "Continuité visible"].map((item) => (
-                    <div key={item} className="flex gap-3 items-center">
-                      <div className="w-2.5 h-2.5 rounded-full bg-[#44BB6C]" />
-                      <span>{item}</span>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="mt-6 text-[10px] text-[#556159]">présence by symi</div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="mx-auto max-w-6xl px-6 py-12">
-          <div className="grid md:grid-cols-3 gap-6">
-            {[
-              ["Comprendre", "Qui est cette personne, son rythme, ses habitudes."],
-              ["Associer", "Trouver quelqu'un de compatible, stable, proche."],
-              ["Installer", "Créer une continuité réelle, visible, rassurante."],
-            ].map(([t, d]) => (
-              <div key={t} className="surface rounded-3xl p-6 border border-soft soft-shadow">
-                <div className="serif-display text-2xl">{t}</div>
-                <p className="mt-2 text-sm text-[#556159]">{d}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="mx-auto max-w-4xl px-6 py-20 text-center">
-          <div className="serif-display text-4xl">Il n'est jamais trop tard pour apprendre.</div>
-          <p className="mt-4 text-sm text-[#556159]">
-            La présence devient un espace d'évolution. Lecture, mémoire, curiosité, transmission.
-          </p>
-        </section>
-      </main>
-    </div>
-  );
+  const [activeFlow, setActiveFlow] = useState<"family" | "companion" | null>(null);
+  const familyQuestions: Question[] = [
+    { id: "who", question: "Qui souhaitez-vous accompagner ?", options: ["Moi", "Quelqu'un de ma famille", "Un proche", "Un parent"] },
+    { id: "how", question: "Comment décririez-vous cette personne ?", options: ["Calme", "Curieuse", "Structurée", "Sociable", "Indépendante"] },
+    { id: "what", question: "Qu'est-ce qui lui ferait du bien aujourd'hui ?", options: ["Discuter", "Sortir", "Lire", "Découvrir", "Apprendre"] },
+    { id: "rhythm", question: "Quel rythme semblerait juste ?", options: ["1 fois / semaine", "2 fois / semaine", "Ponctuel", "À définir ensemble"] },
+  ];
+  const companionQuestions: Question[] = [
+    { id: "rapport", question: "Quel est votre rapport aux autres ?", options: ["Naturel", "Empathique", "Curieux", "À l'écoute", "Stable"] },
+    { id: "travail", question: "Comment travaillez-vous ?", options: ["Ponctuel", "Flexible", "Régulier", "Autonome"] },
+    { id: "disponibilite", question: "Quelle est votre disponibilité ?", options: ["2-4h / semaine", "5-10h / semaine", "+10h", "Variable"] },
+  ];
+  if (activeFlow === "family") { return <FullScreenFlow questions={familyQuestions} onComplete={() => setActiveFlow(null)} />; }
+  if (activeFlow === "companion") { return <FullScreenFlow questions={companionQuestions} onComplete={() => setActiveFlow(null)} />; }
+  return (<div className="min-h-screen w-full"><header className="sticky top-0 z-30 border-b border-soft bg-[rgba(247,243,234,0.78)] backdrop-blur-md"><div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 md:px-10"><div><div className="serif-display text-3xl">SYMI Présence</div><div className="text-[10px] text-[#556159] mt-0.5">by symi</div></div></div></header><main><section className="mx-auto max-w-7xl px-6 py-20 md:px-10"><div className="grid md:grid-cols-12 gap-10 items-center"><div className="md:col-span-7"><h1 className="serif-display text-5xl md:text-7xl leading-[0.95]">Créer une présence.</h1><p className="mt-6 text-lg max-w-xl text-[#556159]">Pour vous, ou pour quelqu'un qui compte. Pour la continuité. Pour une relation qui ne dépend pas du temps disponible.</p><div className="mt-10 flex gap-4"><button onClick={() => setActiveFlow("family")} className="px-6 py-4 rounded-2xl text-white bg-[#1B4332] transition-soft hover:-translate-y-1">Commencer pour quelqu'un</button><button onClick={() => setActiveFlow("companion")} className="px-6 py-4 rounded-2xl border border-[#D8DED4] transition-soft hover:-translate-y-1">Devenir compagnon</button></div></div><div className="md:col-span-5"><div className="surface rounded-[2rem] p-8 border border-soft soft-shadow"><div className="text-sm text-[#556159]">Présence en cours de conception</div><div className="serif-display text-3xl mt-3">Une relation se construit.</div><p className="mt-4 text-sm text-[#556159]">Nous ne proposons pas simplement des visites. Nous construisons un rythme, une continuité et une présence qui s'inscrit dans le temps.</p><div className="mt-6 space-y-3 text-sm">{["Même personne", "Affinité réelle", "Continuité visible"].map((item) => (<div key={item} className="flex gap-3 items-center"><div className="w-2.5 h-2.5 rounded-full bg-[#44BB6C]" /><span>{item}</span></div>))}</div><div className="mt-6 text-[10px] text-[#556159]">présence by symi</div></div></div></div></section><section className="mx-auto max-w-6xl px-6 py-12"><div className="grid md:grid-cols-3 gap-6">{[["Comprendre", "Qui est cette personne, son rythme, ses habitudes."], ["Associer", "Trouver quelqu'un de compatible, stable, proche."], ["Installer", "Créer une continuité réelle, visible, rassurante."]].map(([t, d]) => (<div key={t} className="surface rounded-3xl p-6 border border-soft soft-shadow"><div className="serif-display text-2xl">{t}</div><p className="mt-2 text-sm text-[#556159]">{d}</p></div>))}</div></section><section className="mx-auto max-w-4xl px-6 py-20 text-center"><div className="serif-display text-4xl">Il n'est jamais trop tard pour apprendre.</div><p className="mt-4 text-sm text-[#556159]">La présence devient un espace d'évolution. Lecture, mémoire, curiosité, transmission.</p></section><footer className="border-t border-soft py-8 mt-20"><div className="mx-auto max-w-7xl px-6 md:px-10"><div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-[#556159]"><div className="text-xs">© 2026 SYMI Présence</div><div className="flex gap-6"><a href="/privacy" className="hover:text-[#1B4332] transition-soft">Confidentialité</a><a href="/legal" className="hover:text-[#1B4332] transition-soft">Mentions légales</a></div></div></div></footer></main></div>);
 }
